@@ -3,20 +3,29 @@ const express = require('express');
 const router = express.Router();
 const Reading = require('../models/Reading');
 
-// ====== Helper: nivel de luz a partir de light_raw ======
+// ====== Umbrales de luz ajustados a tu sensor ======
+const LIGHT_THRESHOLDS = {
+  VERY_DARK: 50,   // < 50   → muy oscuro
+  DARK: 100,       // < 100  → oscuro
+  DIM: 150,        // < 150  → poco iluminado
+  BRIGHT: 200      // < 200  → bien iluminado
+  // >= BRIGHT      → muy iluminado
+};
+
 function getLightLevel(lightRaw) {
-  if (lightRaw < 500) {
+  if (lightRaw < LIGHT_THRESHOLDS.VERY_DARK) {
     return 'muy oscuro';
-  } else if (lightRaw < 1200) {
+  } else if (lightRaw < LIGHT_THRESHOLDS.DARK) {
     return 'oscuro';
-  } else if (lightRaw < 2200) {
+  } else if (lightRaw < LIGHT_THRESHOLDS.DIM) {
     return 'poco iluminado';
-  } else if (lightRaw < 3200) {
+  } else if (lightRaw < LIGHT_THRESHOLDS.BRIGHT) {
     return 'bien iluminado';
   } else {
     return 'muy iluminado';
   }
 }
+
 
 // ====== POST /api/readings  (Registrar lectura) ======
 router.post('/', async (req, res) => {
