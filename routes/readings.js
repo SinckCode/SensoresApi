@@ -3,6 +3,22 @@ const express = require('express');
 const router = express.Router();
 const Reading = require('../models/Reading');
 
+// Función helper para traducir el valor de light_raw a texto
+function getLightLevel(lightRaw) {
+  // Ajusta estos rangos como tú quieras según tus pruebas.
+  if (lightRaw < 500) {
+    return 'muy oscuro';
+  } else if (lightRaw < 1200) {
+    return 'oscuro';
+  } else if (lightRaw < 2200) {
+    return 'poco iluminado';
+  } else if (lightRaw < 3200) {
+    return 'bien iluminado';
+  } else {
+    return 'muy iluminado';
+  }
+}
+
 // POST /api/readings
 router.post('/', async (req, res) => {
   try {
@@ -18,7 +34,6 @@ router.post('/', async (req, res) => {
     const requiredFields = [
       'temp_dht_c',
       'humidity_pct',
-      // 'temp_lm35_c',     // <-- ELIMINADO
       'light_raw',
       'light_state'
     ];
@@ -32,9 +47,15 @@ router.post('/', async (req, res) => {
       }
     }
 
+    // Calculamos el nivel de luz en texto
+    const lightLevel = getLightLevel(sensors.light_raw);
+
     const reading = new Reading({
       deviceId,
-      sensors
+      sensors: {
+        ...sensors,
+        light_level: lightLevel   // 👈 aquí agregamos el texto
+      }
     });
 
     const saved = await reading.save();
@@ -53,4 +74,5 @@ router.post('/', async (req, res) => {
   }
 });
 
+// NO OLVIDAR exportar
 module.exports = router;

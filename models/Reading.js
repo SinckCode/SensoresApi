@@ -7,7 +7,8 @@ const SensorSchema = new mongoose.Schema(
     humidity_pct: { type: Number, required: true },
     // temp_lm35_c: { type: Number, required: true }, // <-- ELIMINADO
     light_raw:    { type: Number, required: true },
-    light_state:  { type: Number, required: true } // 0 o 1
+    light_state:  { type: Number, required: true }, // 0 o 1
+    light_level:  { type: String, required: true }
   },
   { _id: false }
 );
