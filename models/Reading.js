@@ -20,6 +20,12 @@ const SensorSchema = new mongoose.Schema(
       type: Number,
       required: true
     },
+    humidity_bme_pct: {             // <--- NUEVO
+      type: Number,
+      required: true,
+      min: 0,
+      max: 100
+    },
     pressure_hpa: {
       type: Number,
       required: true,
@@ -33,6 +39,7 @@ const SensorSchema = new mongoose.Schema(
     },
 
     // === BH1750 (lux) ===
+    // Guardamos directamente los lux en light_raw
     light_raw: {
       type: Number,
       required: true,

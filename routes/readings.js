@@ -4,13 +4,18 @@ const router = express.Router();
 const Reading = require('../models/Reading');
 
 // ====== Umbrales de luz para BH1750 (lux) ======
-// Ajustables según lo que veas en la práctica
+//
+// <   5  → muy oscuro         (noche casi total, solo luna)
+// <  50  → oscuro             (calle poco iluminada, pasillo)
+// < 200  → poco iluminado     (sala, ambiente relajado)
+// < 700  → bien iluminado     (aula, oficina típica)
+// >=700  → muy iluminado      (cerca de ventana, exterior nublado, sol indirecto)
 const LIGHT_THRESHOLDS = {
-  VERY_DARK: 20,   // < 20   → muy oscuro
-  DARK: 100,       // < 100  → oscuro
-  DIM: 300,        // < 300  → poco iluminado
-  BRIGHT: 800      // < 800  → bien iluminado
-  // >= 800         → muy iluminado
+  VERY_DARK: 5,    // < 5   → muy oscuro
+  DARK: 50,        // < 50  → oscuro
+  DIM: 200,        // < 200 → poco iluminado
+  BRIGHT: 700      // < 700 → bien iluminado
+  // >= 700         → muy iluminado
 };
 
 function getLightLevel(lightRaw) {
@@ -29,7 +34,7 @@ function getLightLevel(lightRaw) {
 
 // 0 = oscuro, 1 = iluminado
 function getLightState(lightRaw) {
-  // por ejemplo, a partir de "poco iluminado" lo consideramos iluminado
+  // A partir de "poco iluminado" lo consideramos iluminado
   return lightRaw >= LIGHT_THRESHOLDS.DIM ? 1 : 0;
 }
 
@@ -53,6 +58,7 @@ router.post('/', async (req, res) => {
       'temp_dht_c',
       'humidity_pct',
       'temp_bme_c',
+      'humidity_bme_pct',
       'pressure_hpa',
       'gas_resistance_ohms',
       'light_raw' // BH1750 en lux
@@ -72,6 +78,7 @@ router.post('/', async (req, res) => {
       'temp_dht_c',
       'humidity_pct',
       'temp_bme_c',
+      'humidity_bme_pct',
       'pressure_hpa',
       'gas_resistance_ohms',
       'light_raw'
@@ -96,6 +103,7 @@ router.post('/', async (req, res) => {
         temp_dht_c: sensors.temp_dht_c,
         humidity_pct: sensors.humidity_pct,
         temp_bme_c: sensors.temp_bme_c,
+        humidity_bme_pct: sensors.humidity_bme_pct,
         pressure_hpa: sensors.pressure_hpa,
         gas_resistance_ohms: sensors.gas_resistance_ohms,
         light_raw: sensors.light_raw,
