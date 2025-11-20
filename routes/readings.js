@@ -61,7 +61,7 @@ router.post('/', async (req, res) => {
       'humidity_bme_pct',
       'pressure_hpa',
       'gas_resistance_ohms',
-      'light_raw' // BH1750 en lux
+      'light_lux' // BH1750 en lux
     ];
 
     for (const field of requiredFields) {
@@ -81,7 +81,7 @@ router.post('/', async (req, res) => {
       'humidity_bme_pct',
       'pressure_hpa',
       'gas_resistance_ohms',
-      'light_raw'
+      'light_lux'
     ];
 
     for (const field of numericFields) {
@@ -94,8 +94,8 @@ router.post('/', async (req, res) => {
     }
 
     // Calculamos el nivel de luz y el estado binario
-    const lightLevel = getLightLevel(sensors.light_raw);
-    const lightState = getLightState(sensors.light_raw);
+    const lightLevel = getLightLevel(sensors.light_lux);
+    const lightState = getLightState(sensors.light_lux);
 
     const reading = new Reading({
       deviceId,
@@ -106,7 +106,7 @@ router.post('/', async (req, res) => {
         humidity_bme_pct: sensors.humidity_bme_pct,
         pressure_hpa: sensors.pressure_hpa,
         gas_resistance_ohms: sensors.gas_resistance_ohms,
-        light_raw: sensors.light_raw,
+        light_lux: sensors.light_lux,
         light_state: lightState,
         light_level: lightLevel
       }
