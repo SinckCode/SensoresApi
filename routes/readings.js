@@ -11,21 +11,21 @@ const Reading = require('../models/Reading');
 // < 700  → bien iluminado     (aula, oficina típica)
 // >=700  → muy iluminado      (cerca de ventana, exterior nublado, sol indirecto)
 const LIGHT_THRESHOLDS = {
-  VERY_DARK: 5,    // < 5   → muy oscuro
-  DARK: 50,        // < 50  → oscuro
-  DIM: 200,        // < 200 → poco iluminado
-  BRIGHT: 700      // < 700 → bien iluminado
-  // >= 700         → muy iluminado
+  VERY_DARK: 5,   // < 5   → muy oscuro
+  DARK: 50,       // < 50  → oscuro
+  DIM: 200,       // < 200 → poco iluminado
+  BRIGHT: 700     // < 700 → bien iluminado
+  // >= 700        → muy iluminado
 };
 
-function getLightLevel(lightRaw) {
-  if (lightRaw < LIGHT_THRESHOLDS.VERY_DARK) {
+function getLightLevel(lightLux) {
+  if (lightLux < LIGHT_THRESHOLDS.VERY_DARK) {
     return 'muy oscuro';
-  } else if (lightRaw < LIGHT_THRESHOLDS.DARK) {
+  } else if (lightLux < LIGHT_THRESHOLDS.DARK) {
     return 'oscuro';
-  } else if (lightRaw < LIGHT_THRESHOLDS.DIM) {
+  } else if (lightLux < LIGHT_THRESHOLDS.DIM) {
     return 'poco iluminado';
-  } else if (lightRaw < LIGHT_THRESHOLDS.BRIGHT) {
+  } else if (lightLux < LIGHT_THRESHOLDS.BRIGHT) {
     return 'bien iluminado';
   } else {
     return 'muy iluminado';
@@ -33,9 +33,9 @@ function getLightLevel(lightRaw) {
 }
 
 // 0 = oscuro, 1 = iluminado
-function getLightState(lightRaw) {
+function getLightState(lightLux) {
   // A partir de "poco iluminado" lo consideramos iluminado
-  return lightRaw >= LIGHT_THRESHOLDS.DIM ? 1 : 0;
+  return lightLux >= LIGHT_THRESHOLDS.DIM ? 1 : 0;
 }
 
 // ====== POST /api/readings  (Registrar lectura) ======
@@ -93,9 +93,9 @@ router.post('/', async (req, res) => {
       }
     }
 
-    // Calculamos el nivel de luz y el estado binario
-    const lightLevel = getLightLevel(sensors.light_lux);
-    const lightState = getLightState(sensors.light_lux);
+    const lightLux = sensors.light_lux;
+    const lightLevel = getLightLevel(lightLux);
+    const lightState = getLightState(lightLux);
 
     const reading = new Reading({
       deviceId,
@@ -106,7 +106,7 @@ router.post('/', async (req, res) => {
         humidity_bme_pct: sensors.humidity_bme_pct,
         pressure_hpa: sensors.pressure_hpa,
         gas_resistance_ohms: sensors.gas_resistance_ohms,
-        light_lux: sensors.light_lux,
+        light_lux: lightLux,
         light_state: lightState,
         light_level: lightLevel
       }
