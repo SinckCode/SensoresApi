@@ -3,13 +3,14 @@ const express = require('express');
 const router = express.Router();
 const Reading = require('../models/Reading');
 
-// ====== Umbrales de luz ajustados a tu sensor ======
+// ====== Umbrales de luz para BH1750 (lux) ======
+// Ajustables según lo que veas en la práctica
 const LIGHT_THRESHOLDS = {
-  VERY_DARK: 50,   // < 50   → muy oscuro
+  VERY_DARK: 20,   // < 20   → muy oscuro
   DARK: 100,       // < 100  → oscuro
-  DIM: 150,        // < 150  → poco iluminado
-  BRIGHT: 200      // < 200  → bien iluminado
-  // >= BRIGHT      → muy iluminado
+  DIM: 300,        // < 300  → poco iluminado
+  BRIGHT: 800      // < 800  → bien iluminado
+  // >= 800         → muy iluminado
 };
 
 function getLightLevel(lightRaw) {
@@ -26,6 +27,11 @@ function getLightLevel(lightRaw) {
   }
 }
 
+// 0 = oscuro, 1 = iluminado
+function getLightState(lightRaw) {
+  // por ejemplo, a partir de "poco iluminado" lo consideramos iluminado
+  return lightRaw >= LIGHT_THRESHOLDS.DIM ? 1 : 0;
+}
 
 // ====== POST /api/readings  (Registrar lectura) ======
 router.post('/', async (req, res) => {
@@ -42,11 +48,14 @@ router.post('/', async (req, res) => {
     // Normalizamos el deviceId
     deviceId = String(deviceId).trim().toLowerCase();
 
+    // Campos que DEBE mandar el ESP32 ahora:
     const requiredFields = [
       'temp_dht_c',
       'humidity_pct',
-      'light_raw',
-      'light_state'
+      'temp_bme_c',
+      'pressure_hpa',
+      'gas_resistance_ohms',
+      'light_raw' // BH1750 en lux
     ];
 
     for (const field of requiredFields) {
@@ -58,21 +67,39 @@ router.post('/', async (req, res) => {
       }
     }
 
-    // Validación rápida de tipos
-    if (typeof sensors.light_raw !== 'number') {
-      return res.status(400).json({
-        ok: false,
-        message: 'sensors.light_raw debe ser numérico'
-      });
+    // Validación rápida de tipos numéricos
+    const numericFields = [
+      'temp_dht_c',
+      'humidity_pct',
+      'temp_bme_c',
+      'pressure_hpa',
+      'gas_resistance_ohms',
+      'light_raw'
+    ];
+
+    for (const field of numericFields) {
+      if (typeof sensors[field] !== 'number') {
+        return res.status(400).json({
+          ok: false,
+          message: `sensors.${field} debe ser numérico`
+        });
+      }
     }
 
-    // Calculamos el nivel de luz en texto
+    // Calculamos el nivel de luz y el estado binario
     const lightLevel = getLightLevel(sensors.light_raw);
+    const lightState = getLightState(sensors.light_raw);
 
     const reading = new Reading({
       deviceId,
       sensors: {
-        ...sensors,
+        temp_dht_c: sensors.temp_dht_c,
+        humidity_pct: sensors.humidity_pct,
+        temp_bme_c: sensors.temp_bme_c,
+        pressure_hpa: sensors.pressure_hpa,
+        gas_resistance_ohms: sensors.gas_resistance_ohms,
+        light_raw: sensors.light_raw,
+        light_state: lightState,
         light_level: lightLevel
       }
     });
@@ -132,9 +159,6 @@ router.get('/last', async (req, res) => {
 });
 
 // ====== GET /api/readings  (Histórico con filtros) ======
-// Ejemplos:
-//   /api/readings?deviceId=esp32-node-01&limit=50
-//   /api/readings?deviceId=esp32-node-01&from=2025-11-18&to=2025-11-19
 router.get('/', async (req, res) => {
   try {
     const {

@@ -3,12 +3,10 @@ const mongoose = require('mongoose');
 
 const SensorSchema = new mongoose.Schema(
   {
+    // === DHT22 ===
     temp_dht_c: {
       type: Number,
       required: true
-      // puedes agregar min/max si quieres:
-      // min: -40,
-      // max: 125
     },
     humidity_pct: {
       type: Number,
@@ -16,15 +14,35 @@ const SensorSchema = new mongoose.Schema(
       min: 0,
       max: 100
     },
+
+    // === BME680 ===
+    temp_bme_c: {
+      type: Number,
+      required: true
+    },
+    pressure_hpa: {
+      type: Number,
+      required: true,
+      min: 300,   // rango típico sensato
+      max: 1100
+    },
+    gas_resistance_ohms: {
+      type: Number,
+      required: true,
+      min: 0
+    },
+
+    // === BH1750 (lux) ===
     light_raw: {
       type: Number,
       required: true,
       min: 0
     },
+    // 0 = oscuro, 1 = iluminado (según lux)
     light_state: {
       type: Number,
       required: true,
-      enum: [0, 1] // 0 = luz apagada, 1 = encendida
+      enum: [0, 1]
     },
     light_level: {
       type: String,
