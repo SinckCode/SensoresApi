@@ -5,7 +5,9 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 
-const readingsRouter = require('./routes/readings');
+// Rutas nuevas
+const dhtLightReadingsRouter = require('./routes/dhtLightReadingsRouter');
+const bmeReadingsRouter = require('./routes/bmeReadingsRouter');
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -20,12 +22,20 @@ app.use(express.json()); // para leer JSON del ESP32
 app.get('/', (req, res) => {
   res.json({
     ok: true,
-    message: 'ESP32 Sensors API funcionando'
+    message: 'ESP32 Sensors API funcionando',
+    endpoints: {
+      dhtLightReadings: '/api/dht-light-readings',
+      bmeReadings: '/api/bme-readings'
+    }
   });
 });
 
 // Rutas
-app.use('/api/readings', readingsRouter);
+// ESP32 #1: DHT22 + Luz
+app.use('/api/dht-light-readings', dhtLightReadingsRouter);
+
+// ESP32 #2: BME680
+app.use('/api/bme-readings', bmeReadingsRouter);
 
 // Conexión a Mongo y arranque del server
 mongoose
