@@ -8,6 +8,7 @@ const cors = require('cors');
 // Rutas nuevas
 const dhtLightReadingsRouter = require('./routes/dhtLightReadingsRouter');
 const bmeReadingsRouter = require('./routes/bmeReadingsRouter');
+const statsRouter = require('./routes/statsRouter'); // <--- NUEVO
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -25,7 +26,8 @@ app.get('/', (req, res) => {
     message: 'ESP32 Sensors API funcionando',
     endpoints: {
       dhtLightReadings: '/api/dht-light-readings',
-      bmeReadings: '/api/bme-readings'
+      bmeReadings: '/api/bme-readings',
+      stats: '/api/stats' // <--- NUEVO
     }
   });
 });
@@ -36,6 +38,9 @@ app.use('/api/dht-light-readings', dhtLightReadingsRouter);
 
 // ESP32 #2: BME680
 app.use('/api/bme-readings', bmeReadingsRouter);
+
+// Estadísticas y comparación con normas
+app.use('/api/stats', statsRouter); // <--- NUEVO
 
 // Conexión a Mongo y arranque del server
 mongoose
