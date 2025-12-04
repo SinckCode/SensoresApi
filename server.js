@@ -8,7 +8,8 @@ const cors = require('cors');
 // Rutas nuevas
 const dhtLightReadingsRouter = require('./routes/dhtLightReadingsRouter');
 const bmeReadingsRouter = require('./routes/bmeReadingsRouter');
-const statsRouter = require('./routes/statsRouter'); // <--- NUEVO
+const statsRouter = require('./routes/statsRouter');
+const dayleStatsRouter = require('./routes/dayleStatsRouter');
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -40,7 +41,10 @@ app.use('/api/dht-light-readings', dhtLightReadingsRouter);
 app.use('/api/bme-readings', bmeReadingsRouter);
 
 // Estadísticas y comparación con normas
-app.use('/api/stats', statsRouter); // <--- NUEVO
+app.use('/api/stats', statsRouter);
+
+// Resúmenes diarios
+app.use('/api/dayle-stats', dayleStatsRouter);
 
 // Conexión a Mongo y arranque del server
 mongoose
