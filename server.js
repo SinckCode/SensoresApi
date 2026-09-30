@@ -20,6 +20,22 @@ const MONGODB_URI =
 app.use(cors());
 app.use(express.json()); // para leer JSON del ESP32
 
+// Health con el estado real de la base. Un endpoint que responde ok sin mirar
+// Mongo es justo lo que permitio que un crash loop de semanas pasara
+// inadvertido: el proceso moria cada 30 s y nada lo reportaba. Devuelve 503 si
+// la conexion no esta lista, para que un monitor o el verify del deploy se
+// enteren.
+const ESTADOS_DB = ['desconectado', 'conectado', 'conectando', 'desconectando'];
+app.get('/health', (req, res) => {
+  const estado = mongoose.connection.readyState;
+  const listo = estado === 1;
+  res.status(listo ? 200 : 503).json({
+    ok: listo,
+    db: ESTADOS_DB[estado] || 'desconocido',
+    uptime: Math.round(process.uptime()),
+  });
+});
+
 // Healthcheck básico
 app.get('/', (req, res) => {
   res.json({
