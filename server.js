@@ -50,7 +50,11 @@ app.use('/api/dayle-stats', dayleStatsRouter);
 mongoose
   .connect(MONGODB_URI)
   .then(() => {
-    console.log('Conectado a MongoDB:', MONGODB_URI);
+    // Nunca la URI completa: trae usuario y contrasena en claro. Con un crash
+    // loop (paso: ~24k reinicios por una regla de firewall) la credencial queda
+    // repetida miles de veces en los logs de PM2, legible por cualquiera que
+    // pueda leer ~/.pm2/logs. Se conserva host y base, que es lo que sirve.
+    console.log('Conectado a MongoDB:', MONGODB_URI.replace(/\/\/[^@]*@/, '//<credenciales>@'));
     app.listen(PORT, () => {
       console.log(`Servidor escuchando en http://0.0.0.0:${PORT}`);
     });
